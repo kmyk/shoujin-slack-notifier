@@ -77,6 +77,7 @@ def main():
     parser.add_argument('--webhook-url')
     parser.add_argument('--config-file', type=pathlib.Path, default=pathlib.Path('~/.config/{}/config.json'.format(appname)).expanduser())
     parser.add_argument('--cache-dir')
+    parser.add_argument('--no-post', action='store_true')
     args = parser.parse_args()
 
     # load the config
@@ -95,7 +96,7 @@ def main():
     if args.cache_dir is None:
         args.cache_dir = args.config['cache-dir']
 
-    # notify
+    # make data
     info_contests = get_info_contests()
     info_problems = get_info_merged_problems()
     data = []
@@ -117,15 +118,18 @@ def main():
             'delta': delta,
             'str': s,
         } ]
-    if not data:
-        print('nothing to notify...', file=sys.stderr)
-    else:
-        data.sort(key=lambda x: len(x['delta']), reverse=True)
-        print(data)
-        payload = { 'text': '\n'.join([ row['str'] for row in data ]) }
-        print(payload)
-        resp = requests.post(args.webhook_url, data=json.dumps(payload))
-        resp.raise_for_status()
+
+    # post data
+    if not args.no_post:
+        if not data:
+            print('nothing to notify...', file=sys.stderr)
+        else:
+            data.sort(key=lambda x: len(x['delta']), reverse=True)
+            print(data)
+            payload = { 'text': '\n'.join([ row['str'] for row in data ]) }
+            print(payload)
+            resp = requests.post(args.webhook_url, data=json.dumps(payload))
+            resp.raise_for_status()
 
 
 if __name__ == '__main__':
