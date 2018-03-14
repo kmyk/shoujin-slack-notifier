@@ -3,7 +3,7 @@
 import json
 import pathlib
 import re
-import requests
+import requests  # https://pypi.python.org/pypi/requests
 import sys
 
 
