@@ -121,6 +121,7 @@ def main():
             'delta': delta,
             'str': s,
         } ]
+    data.sort(key=lambda x: len(x['delta']), reverse=True)
     text = '\n'.join([ row['str'] for row in data ])
 
     # post data
@@ -130,7 +131,6 @@ def main():
         print('[*] payload:')
         print(text)
         print('[*] POST', args.webhook_url)
-        data.sort(key=lambda x: len(x['delta']), reverse=True)
         resp = requests.post(args.webhook_url, data=json.dumps({ 'text': text }))
         resp.raise_for_status()
 
