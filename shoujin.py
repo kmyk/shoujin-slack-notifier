@@ -80,7 +80,6 @@ def main():
     parser.add_argument('--webhook-url')
     parser.add_argument('--config-file', type=pathlib.Path, default=pathlib.Path('~/.config/{}/config.json'.format(appname)).expanduser())
     parser.add_argument('--cache-dir')
-    parser.add_argument('--no-post', action='store_true')
     args = parser.parse_args()
 
     # load the config
@@ -110,30 +109,30 @@ def main():
             continue
         s = ''
         s += '_{}_ solved *{}* problems!\n'.format(user, len(delta))
-        for problem_id in delta:
-            contest_id = info_problems[problem_id]['contest_id']  # TODO: get correct ones even if there are many contests
-            name = info_contests[contest_id]['title'] + ' ' + info_problems[problem_id]['title']
-            point = info_problems[problem_id].get('point')
-            url = 'https://beta.atcoder.jp/contests/{}/tasks/{}'.format(contest_id, problem_id)
-            s += '{} {} {}\n'.format(name, '({} pts)'.format(int(point)) if point else '', url)
+        if len(delta) <= 30:
+            for problem_id in delta:
+                contest_id = info_problems[problem_id]['contest_id']  # TODO: get correct ones even if there are many contests
+                name = info_contests[contest_id]['title'] + ' ' + info_problems[problem_id]['title']
+                point = info_problems[problem_id].get('point')
+                url = 'https://beta.atcoder.jp/contests/{}/tasks/{}'.format(contest_id, problem_id)
+                s += '{} {} {}\n'.format(name, '({} pts)'.format(int(point)) if point else '', url)
         data += [ {
             'name': user,
             'delta': delta,
             'str': s,
         } ]
+    text = '\n'.join([ row['str'] for row in data ])
 
     # post data
-    if not args.no_post:
-        if not data:
-            print('[*] nothing to notify...')
-        else:
-            print('[*] POST', args.webhook_url)
-            data.sort(key=lambda x: len(x['delta']), reverse=True)
-            print(data)
-            payload = { 'text': '\n'.join([ row['str'] for row in data ]) }
-            print(payload)
-            resp = requests.post(args.webhook_url, data=json.dumps(payload))
-            resp.raise_for_status()
+    if not data:
+        print('[*] nothing to notify...')
+    else:
+        print('[*] payload:')
+        print(text)
+        print('[*] POST', args.webhook_url)
+        data.sort(key=lambda x: len(x['delta']), reverse=True)
+        resp = requests.post(args.webhook_url, data=json.dumps({ 'text': text }))
+        resp.raise_for_status()
 
 
 if __name__ == '__main__':
