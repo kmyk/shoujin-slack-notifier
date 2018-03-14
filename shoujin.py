@@ -2,9 +2,18 @@
 # -*- coding: utf-8 -*-
 import json
 import pathlib
+import random
 import re
 import requests  # https://pypi.python.org/pypi/requests
-import sys
+import time
+
+def requests_get_json(url):
+    print('[*] GET', url)
+    delay = random.random() * 2 + 1
+    time.sleep(delay)
+    resp = requests.get(url)
+    resp.raise_for_status()
+    return resp.json()
 
 
 def get_data_pair(user, cache_dir):
@@ -21,9 +30,7 @@ def get_data_pair(user, cache_dir):
 
     # use the API
     url = 'http://kenkoooo.com/atcoder/atcoder-api/results?user=' + user
-    resp = requests.get(url)
-    resp.raise_for_status()
-    data = resp.json()
+    data = requests_get_json(url)
 
     # write cache
     cache_path.parent.mkdir(parents=True, exist_ok=True)
@@ -44,9 +51,7 @@ def get_accepted_delta(new, old):
 
 def get_info_contests():
     url = 'http://kenkoooo.com/atcoder/atcoder-api/info/contests'
-    resp = requests.get(url)
-    resp.raise_for_status()
-    data = resp.json()
+    data = requests_get_json(url)
     f = {}
     for row in data:
         f[row['id']] = row
@@ -54,9 +59,7 @@ def get_info_contests():
 
 def get_info_merged_problems():
     url = 'http://kenkoooo.com/atcoder/atcoder-api/info/merged-problems'
-    resp = requests.get(url)
-    resp.raise_for_status()
-    data = resp.json()
+    data = requests_get_json(url)
     f = {}
     for row in data:
         f[row['id']] = row
@@ -122,8 +125,9 @@ def main():
     # post data
     if not args.no_post:
         if not data:
-            print('nothing to notify...', file=sys.stderr)
+            print('[*] nothing to notify...')
         else:
+            print('[*] POST', args.webhook_url)
             data.sort(key=lambda x: len(x['delta']), reverse=True)
             print(data)
             payload = { 'text': '\n'.join([ row['str'] for row in data ]) }
