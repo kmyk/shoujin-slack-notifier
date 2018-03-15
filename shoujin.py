@@ -1,5 +1,6 @@
 # Python Version: 3.x
 # -*- coding: utf-8 -*-
+import datetime
 import json
 import pathlib
 import random
@@ -99,6 +100,9 @@ def main():
         args.users = args.config['users']
     if args.cache_dir is None:
         args.cache_dir = args.config['cache-dir']
+
+    # log
+    print('[*]', datetime.datetime.now())
 
     # make data
     info_contests = get_info_contests()
