@@ -43,10 +43,12 @@ def get_data_pair(user, cache_dir):
 def get_accepted_delta(new, old):
     accepted = set()
     for row in new:
-        accepted.add(row['problem_id'])
+        if row['result'] == 'AC':
+            accepted.add(row['problem_id'])
     for row in old:
-        if row['problem_id'] in accepted:
-            accepted.remove(row['problem_id'])
+        if row['result'] == 'AC':
+            if row['problem_id'] in accepted:
+                accepted.remove(row['problem_id'])
     return list(sorted(accepted))
 
 def get_info_contests():
