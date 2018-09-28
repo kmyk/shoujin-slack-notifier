@@ -83,6 +83,7 @@ def main():
     parser.add_argument('--webhook-url')
     parser.add_argument('--config-file', type=pathlib.Path, default=pathlib.Path('~/.config/{}/config.json'.format(appname)).expanduser())
     parser.add_argument('--cache-dir')
+    parser.add_argument('--no-post', action='store_true')
     args = parser.parse_args()
 
     # load the config
@@ -136,9 +137,10 @@ def main():
     else:
         print('[*] payload:')
         print(text)
-        print('[*] POST', args.webhook_url)
-        resp = requests.post(args.webhook_url, data=json.dumps({ 'text': text }))
-        resp.raise_for_status()
+        if not args.no_post:
+            print('[*] POST', args.webhook_url)
+            resp = requests.post(args.webhook_url, data=json.dumps({ 'text': text }))
+            resp.raise_for_status()
 
 
 if __name__ == '__main__':
