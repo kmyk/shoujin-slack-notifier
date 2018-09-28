@@ -144,7 +144,6 @@ class CodeforcesShoujin(object):
             contest_id = submission['contestId']
             problem = submission['problem']
             problem_id = ( contest_id, problem['index'] )
-            print(problem)
             delta[problem_id] = {
                 'problem_id': problem_id,
                 'title': self.contests[contest_id]['name'] + ': ' + problem['name'],
@@ -182,11 +181,11 @@ def make_data(users, cache_dir=None):
         if not problems:
             continue
 
+        texts = []
+        texts += [ '_{}_ solved *{}* problems!'.format(user_name, len(problems)) ]
         if len(problems) > 30:
-            text = ''
+            texts += [ '(omitted...)' ]
         else:
-            texts = []
-            texts += [ '_{}_ solved *{}* problems!'.format(user_name, len(problems)) ]
             for problem in problems:
                 words = []
                 words += [ problem['title'] ]
@@ -194,12 +193,11 @@ def make_data(users, cache_dir=None):
                     words += [ '({} pts)'.format(problem['score']) ]
                 words += [ problem['url'] ]
                 texts += [ ' '.join(words) ]
-            text = '\n'.join(texts)
 
         data += [ {
             'name': user_name,
             'problems': problems,
-            'text': text,
+            'text': '\n'.join(texts),
         } ]
 
     # sort and concat
