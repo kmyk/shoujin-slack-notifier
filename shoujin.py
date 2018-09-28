@@ -15,6 +15,25 @@ def requests_get_json(url):
     resp.raise_for_status()
     return resp.json()
 
+def read_cache(path):
+    if path is None:
+        return None
+    assert path.suffix == '.json'
+    if path.exists():
+        print('[*] read cache file:', path)
+        with path.open() as fh:
+            return json.loads(fh.read())
+    else:
+        return None
+
+def write_cache(path, data):
+    if path is None:
+        return None
+    assert path.suffix == '.json'
+    path.parent.mkdir(parents=True, exist_ok=True)
+    print('[*] write cache file:', path)
+    with path.open('w') as fh:
+        fh.write(json.dumps(data))
 
 class AtCoderShoujin(object):
 
@@ -42,22 +61,14 @@ class AtCoderShoujin(object):
     def _get_results_pair(self, user_id):
         # read cache
         cache_path = pathlib.Path(self.cache_dir) / 'atcoder' / (user_id + '.json')
-        if cache_path.exists():
-            print('[*] read cache file:', cache_path)
-            with cache_path.open() as fh:
-                old_data = json.loads(fh.read())
-        else:
-            old_data = []
+        old_data = read_cache(cache_path) or []
 
         # use the API
         url = 'http://kenkoooo.com/atcoder/atcoder-api/results?user=' + user_id
         data = requests_get_json(url)
 
         # write cache
-        cache_path.parent.mkdir(parents=True, exist_ok=True)
-        print('[*] write cache file:', cache_path)
-        with cache_path.open('w') as fh:
-            fh.write(json.dumps(data))
+        write_cache(cache_path, data)
 
         return { 'new': data, 'old': old_data }
 
@@ -95,9 +106,64 @@ class CodeforcesShoujin(object):
 
     def __init__(self, cache_dir=None):
         self.cache_dir = cache_dir
+        self.contests = {}
+        self.contests.update(self._get_contests())
+        self.contests.update(self._get_contests(gym=True))
+
+    def _get_contests(self, gym=False):
+        url = 'http://codeforces.com/api/contest.list'
+        if gym:
+            url += '?gym=true'
+        data = requests_get_json(url)
+        assert data['status'] == 'OK'
+        return { row['id']: row for row in data['result'] }
+
+    def _get_results_pair(self, user_id):
+        # read cache
+        cache_path = pathlib.Path(self.cache_dir) / 'codeforces' / (user_id + '.json')
+        old_data = read_cache(cache_path) or { 'result': [] }
+
+        # use the API
+        url = 'http://codeforces.com/api/user.status?handle=' + user_id
+        data = requests_get_json(url)
+        assert data['status'] == 'OK'
+
+        # write cache
+        write_cache(cache_path, data)
+
+        return { 'new': data, 'old': old_data }
 
     def __call__(self, user_id):
-        return []
+        results = self._get_results_pair(user_id)
+        delta = {}
+
+        # add new problems
+        for submission in results['new']['result']:
+            if submission['verdict'] != 'OK':
+                continue
+            contest_id = submission['contestId']
+            problem = submission['problem']
+            problem_id = ( contest_id, problem['index'] )
+            print(problem)
+            delta[problem_id] = {
+                'problem_id': problem_id,
+                'title': self.contests[contest_id]['name'] + ': ' + problem['name'],
+                'url': 'http://codeforces.com/contest/{}/problem/{}'.format(contest_id, problem['index']),
+            }
+            if 'points' in problem:
+                delta[problem_id]['score'] = str(problem['points'])
+
+        # remove old problems
+        for submission in results['old']['result']:
+            if submission['verdict'] != 'OK':
+                continue
+            problem_id = ( submission['contestId'], submission['problem']['index'] )
+            if problem_id in delta:
+                del delta[problem_id]
+
+        delta = list(delta.values())
+        delta.sort(key=lambda problem: problem['problem_id'])
+        return delta
 
 
 def make_data(users, cache_dir=None):
