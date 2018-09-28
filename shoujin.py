@@ -4,7 +4,6 @@ import datetime
 import json
 import pathlib
 import random
-import re
 import requests  # https://pypi.python.org/pypi/requests
 import time
 
@@ -41,9 +40,6 @@ class AtCoderShoujin(object):
         return f
 
     def _get_results_pair(self, user_id):
-        if not re.match('^[0-9A-Za-z]+$', user_id):
-            raise ValueError()
-
         # read cache
         cache_path = pathlib.Path(self.cache_dir) / 'atcoder' / (user_id + '.json')
         if cache_path.exists():
@@ -184,7 +180,7 @@ def main():
     if args.cache_dir is None:
         args.cache_dir = args.config['cache-dir']
 
-    # log
+    # print timestamp
     print('[*]', datetime.datetime.now())
 
     # make data
