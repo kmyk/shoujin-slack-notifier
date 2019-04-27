@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <title>AtCoder 精進 notification BOT</title>
+    </head>
+    <body>
+        <h1>AtCoder 精進 notification BOT</h1>
+
+        <h2>これなに？</h2>
+        <p>
+            Slack に精進の成果を通知してくれる BOT です。
+            特にこのページはその web interface です。
+            ソースコードは <a href="https://github.com/kmyk/shoujin-slack-notifier">kmyk/shoujin-slack-notifier</a> にあります。
+            そんなにまじめには作ってないので壊れるときは壊れます。
+        </p>
+
+        <h2>console</h2>
+
+        <h3>部屋一覧</h3>
+        <form action="/room/list">
+            <input type="submit"></input><br>
+        </form>
+
+        <h3>登録</h3>
+        <form action="/room/new" method="post">
+            <label>部屋名: <input type="text" name="room_id"></input>.slack.com</label><br>
+            <label>Incoming WebHook: <input type="text" name="webhook_url" placeholder="https://hooks.slack.com/services/?????????/?????????/????????????????????????"></input></label><br>
+            <input type="submit"></input><br>
+        </form>
+
+        <h3>token再発行</h3>
+        <form action="/room/token" method="post">
+            <label>部屋名: <input type="text" name="room_id"></input>.slack.com</label><br>
+            <input type="submit"></input><br>
+        </form>
+
+        <h3>認証</h3>
+        <form action="/room/activate" method="post">
+            <label>部屋名: <input type="text" name="room_id"></input>.slack.com</label><br>
+            <label>token: <input type="text" name="token"></input></label><br>
+            <input type="submit"></input><br>
+        </form>
+
+        <h3>ユーザー一覧</h3>
+        <form action="/room/users" method="post">
+            <label>部屋名: <input type="text" name="room_id"></input>.slack.com</label><br>
+            <label>token: <input type="text" name="token"></input></label><br>
+            <input type="submit"></input><br>
+        </form>
+
+        <h3>ユーザー追加</h3>
+        <form action="/room/useradd" method="post">
+            <label>部屋名: <input type="text" name="room_id"></input>.slack.com</label><br>
+            <label>token: <input type="text" name="token"></input></label><br>
+            <label>Slack ID: @<input type="text" name="slack_id"></input></label><br>
+            <label>AtCoder ID: <input type="text" name="atcoder_id"></input></label><br>
+            <input type="submit"></input><br>
+        </form>
+
+        <h3>ユーザー削除</h3>
+        <form action="/room/userdel" method="post">
+            <label>部屋名: <input type="text" name="room_id"></input>.slack.com</label><br>
+            <label>token: <input type="text" name="token"></input></label><br>
+            <label>Slack ID: @<input type="text" name="slack_id"></input></label><br>
+            <input type="submit"></input><br>
+        </form>
+
+        <h3>削除</h3>
+        <form action="/room/delete" method="post">
+            <label>部屋名: <input type="text" name="room_id"></input>.slack.com</label><br>
+            <label>token: <input type="text" name="token"></input></label><br>
+            <input type="submit"></input><br>
+        </form>
+
+    </body>
+</html>

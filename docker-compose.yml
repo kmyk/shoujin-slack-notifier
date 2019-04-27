@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+    frontend:
+        image: python:3.7
+        volumes:
+           -   ./frontend:/frontend
+        working_dir: /frontend
+        command: ["bash", "-c", "pip3 install -r requirements.txt && gunicorn main:app -b 0.0.0.0:8000"]
+
+        links:
+            -   db
+        environment:
+            -   POSTGRES_HOST=db
+            -   POSTGRES_USER=postgres
+
+        ports:
+            -   127.0.0.1:8000:8000
+
+    backend:
+        image: python:3.7
+        volumes:
+           -   ./backend:/backend
+        working_dir: /backend
+        command: ["bash", "-c", "pip3 install -r requirements.txt && python3 main.py"]
+
+        links:
+            -   db
+        environment:
+            -   POSTGRES_HOST=db
+            -   POSTGRES_USER=postgres
+
+    db:
+        image: postgres:11
+
+        volumes:
+            -   ./db/init:/docker-entrypoint-initdb.d  # initialize the database with the feature of the official image
+            -   ./db/data:/var/lib/postgresql/data

@@ -1,0 +1,6 @@
+Flask
+Jinja2
+gunicorn
+psycopg2
+redis
+requests
